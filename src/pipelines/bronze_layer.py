@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import logging
 from src.api_client import fetch_all_offers
-from src.config import BRONZE_PATH, DEPARTMENT, CONTRACT_TYPE, LOG_LEVEL
+from src.config import BRONZE_PATH, DEPARTMENT, CONTRACT_TYPE, LOG_LEVEL, JOB_OFFERS_URL
 
 # Configure logging
 logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -16,6 +16,8 @@ def save_raw_data():
     """
     try:
         # Fetch all job offers
+        logger.info(f"Fetching job offers from API: {JOB_OFFERS_URL} with filters: "
+                f"{{'departement': '{DEPARTMENT}', 'typeContrat': '{CONTRACT_TYPE}'}}")
         all_offers = fetch_all_offers(department=DEPARTMENT, contract_type=CONTRACT_TYPE)
         total_offers = len(all_offers)  # Total number of offers retrieved
 
