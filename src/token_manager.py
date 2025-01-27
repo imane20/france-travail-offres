@@ -1,29 +1,29 @@
-import os
 import requests
-from dotenv import load_dotenv
 import logging
-
-# Load environment variables
-load_dotenv()
-
-# Configuration from .env
-TOKEN_URL = os.getenv("API_TOKEN_URL")
-REALM = os.getenv("REALM")
-CLIENT_ID = os.getenv("CLIENT_ID")
-CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-SCOPES = os.getenv("SCOPES")
-CONTENT_TYPE = os.getenv("CONTENT_TYPE")
+from src.config import (
+    API_TOKEN_URL,
+    REALM,
+    CLIENT_ID,
+    CLIENT_SECRET,
+    SCOPES,
+    CONTENT_TYPE,
+    REQUEST_TIMEOUT,
+)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+
 def get_bearer_token():
     """
     Generate a bearer token using client credentials.
+
+    Returns:
+        dict: A dictionary containing the access token and its metadata.
     """
     # Construct the full URL with the realm parameter
-    url = f"{TOKEN_URL}?realm={REALM}"
+    url = f"{API_TOKEN_URL}?realm={REALM}"
 
     # Define the payload and headers
     payload = {
@@ -38,7 +38,7 @@ def get_bearer_token():
 
     try:
         logger.info(f"Requesting bearer token from URL: {url}")
-        response = requests.post(url, data=payload, headers=headers)
+        response = requests.post(url, data=payload, headers=headers, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()  # Raise an exception for HTTP errors
 
         token_data = response.json()
