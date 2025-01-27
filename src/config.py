@@ -27,3 +27,4 @@ REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", 10))  # Default to 10 seconds
 
 # Data paths
 BRONZE_PATH = os.getenv("BRONZE_PATH", os.path.join("data", "bronze"))
+SILVER_PATH = os.getenv("SILVER_PATH", os.path.join("data", "silver"))
