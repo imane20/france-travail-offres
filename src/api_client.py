@@ -1,55 +1,79 @@
 import requests
 import logging
-from token_manager import get_bearer_token
-from config import (
-    JOB_OFFERS_URL,
-    DEPARTMENT,
-    CONTRACT_TYPE,
-    REQUEST_TIMEOUT,
-    LOG_LEVEL,
-)
+from src.token_manager import get_bearer_token
+from src.config import JOB_OFFERS_URL, REQUEST_TIMEOUT
 
-# Set up logging
-logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
-
-def fetch_offers(department=DEPARTMENT, contract_type=CONTRACT_TYPE):
+def fetch_single_page(department, contract_type, range_start, range_end):
     """
-    Fetch job offers from the API using the Bearer token, filtered by department and contract type.
-
+    Fetch a single page of job offers from the API.
     Args:
-        department (str): The department to filter job offers by.
-        contract_type (str): The contract type to filter job offers by.
-
+        department (str): Department filter.
+        contract_type (str): Contract type filter.
+        range_start (int): Start index of the range.
+        range_end (int): End index of the range.
     Returns:
-        dict: The API response containing job offers.
+        dict: The JSON response from the API and the Content-Range header.
     """
     try:
-        # Get the Bearer token
-        token_info = get_bearer_token()
-        access_token = token_info["access_token"]
-
-        # Set up headers
+        # Set up headers and parameters
         headers = {
-            "Authorization": f"Bearer {access_token}",
+            "Authorization": f"Bearer {get_bearer_token()['access_token']}",
             "Content-Type": "application/json",
+            "Range": f"offres {range_start}-{range_end}"
         }
-
-        # Define query parameters
         params = {
             "departement": department,
             "typeContrat": contract_type,
         }
 
-        logger.info(f"Fetching job offers from API: {JOB_OFFERS_URL} with filters: {params}")
+        logger.info(f"Fetching offers with range {range_start}-{range_end}")
         response = requests.get(JOB_OFFERS_URL, headers=headers, params=params, timeout=REQUEST_TIMEOUT)
-        response.raise_for_status()  # Raise exception for HTTP errors
+        response.raise_for_status()
 
-        offers = response.json()
-        logger.info(f"Successfully retrieved {len(offers.get('resultats', []))} job offers.")
-        return offers
+        return {
+            "data": response.json(),
+            "content_range": response.headers.get("Content-Range", "")
+        }
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"Failed to fetch job offers: {e}")
+        logger.error(f"Failed to fetch offers: {e}")
         raise
+
+def fetch_all_offers(department, contract_type, range_step=150):
+    """
+    Fetch all job offers from the API using pagination.
+    Args:
+        department (str): Department filter.
+        contract_type (str): Contract type filter.
+        range_step (int): Number of offers to fetch per request.
+    Returns:
+        list: A combined list of all job offers.
+    """
+    all_offers = []
+    range_start = 0
+
+    while True:
+        # Calculate the end of the current range
+        range_end = range_start + range_step - 1
+
+        # Fetch a single page of data
+        result = fetch_single_page(department, contract_type, range_start, range_end)
+        offers = result["data"].get("resultats", [])
+        all_offers.extend(offers)
+
+        # Parse Content-Range header
+        content_range = result["content_range"]
+        if not content_range:
+            break  # Exit if Content-Range is missing
+        total_offers = int(content_range.split("/")[-1])
+
+        # Break when all offers are fetched
+        if range_end + 1 >= total_offers:
+            break
+
+        # Increment range_start for the next page
+        range_start += range_step
+
+    return all_offers

@@ -24,3 +24,6 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 # Request Configuration
 REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", 10))  # Default to 10 seconds if not provided
+
+# Data paths
+BRONZE_PATH = os.getenv("BRONZE_PATH", os.path.join("data", "bronze"))

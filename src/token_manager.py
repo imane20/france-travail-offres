@@ -1,6 +1,6 @@
 import requests
 import logging
-from config import (
+from src.config import (
     API_TOKEN_URL,
     REALM,
     CLIENT_ID,
