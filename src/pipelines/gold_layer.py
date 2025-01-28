@@ -119,9 +119,9 @@ def process_competences_table():
         select_cols=SELECT_COLUMNS_COMPETENCES,
     )
 
-if __name__ == "__main__":
-    logger.info("Starting gold layer processing")
+def run_gold_pipeline():
+    logger.info("Starting Gold Pipeline...")
     process_offers_table()
     process_entreprises_table()
     process_competences_table()
-    logger.info("Gold layer processing completed")
+    logger.info("Gold Pipeline completed successfully.")
