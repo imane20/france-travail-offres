@@ -77,16 +77,10 @@ def create_competences_csv(df):
     competences_flattened.to_csv(output_path, index=False, sep=',', quotechar='"', quoting=QUOTE_ALL)
     logging.info(f"Competences CSV saved at {output_path}")
 
-# Main execution
-if __name__ == "__main__":
-    logging.info("Starting the pipeline")
-    
-    # Load data from the bronze layer
-    df_bronze = load_bronze_data()
-    
-    # Create and save the CSVs
-    create_offers_csv(df_bronze)
-    create_entreprise_csv(df_bronze)
-    create_competences_csv(df_bronze)
-    
-    logging.info("Pipeline execution completed")
+def run_silver_pipeline():
+    logging.info("Starting Silver Pipeline...")
+    df = load_bronze_data()
+    create_offers_csv(df)
+    create_entreprise_csv(df)
+    create_competences_csv(df)
+    logging.info("Silver Pipeline completed successfully.")
